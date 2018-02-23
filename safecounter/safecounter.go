@@ -1,25 +1,25 @@
-package main
+package safecounter
 
 import "sync"
 
-type safeCounter struct {
+type SafeCounter struct {
 	uint
 	sync.RWMutex
 }
 
-func (sc *safeCounter) Increment() {
+func (sc *SafeCounter) Increment() {
 	sc.Lock()
 	sc.uint++
 	sc.Unlock()
 }
 
-func (sc *safeCounter) Decrement() {
+func (sc *SafeCounter) Decrement() {
 	sc.Lock()
 	sc.uint--
 	sc.Unlock()
 }
 
-func (sc *safeCounter) Uint() uint {
+func (sc *SafeCounter) Uint() uint {
 	sc.RLock()
 	u := sc.uint
 	sc.RUnlock()
@@ -28,7 +28,7 @@ func (sc *safeCounter) Uint() uint {
 
 // Reset resets the counter count value to 0 and returns the value that count
 // was on immediately prior to being set to 0
-func (sc *safeCounter) Reset() uint {
+func (sc *SafeCounter) Reset() uint {
 	sc.Lock()
 	u := sc.uint
 	sc.uint = 0

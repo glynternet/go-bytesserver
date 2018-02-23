@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/glynternet/go-bytesserver/safecounter"
 	"github.com/pkg/errors"
 )
 
-var requests, connections safeCounter
+var requests, connections safecounter.SafeCounter
 
 type route struct {
 	pattern string
