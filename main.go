@@ -4,18 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 )
 
 var requests, connections safeCounter
-
-type safeCounter struct {
-	uint
-	sync.RWMutex
-}
 
 type route struct {
 	pattern string
@@ -37,12 +31,7 @@ func main() {
 	go func() {
 		for {
 			<-time.NewTicker(time.Second).C
-			requests.Lock()
-			connections.RLock()
-			log.Printf("connections: %03d, requests: %04d", connections.uint, requests.uint)
-			requests.uint = 0
-			requests.Unlock()
-			connections.RUnlock()
+			log.Printf("connections: %03d, requests: %04d", connections.Uint(), requests.Reset())
 		}
 	}()
 
@@ -56,21 +45,14 @@ func main() {
 
 func bytesHandler(bs []byte) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
-		connections.Lock()
-		connections.uint++
-		connections.Unlock()
+		connections.Increment()
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write(bs)
 		if err != nil {
 			log.Print(errors.Wrap(err, "writing body"))
 		}
-		requests.Lock()
-		requests.uint++
-		requests.Unlock()
-
-		connections.Lock()
-		connections.uint--
-		connections.Unlock()
+		requests.Increment()
+		connections.Decrement()
 	}
 }
 
