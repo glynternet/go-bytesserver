@@ -17,6 +17,22 @@ type safeCounter struct {
 	sync.RWMutex
 }
 
+type route struct {
+	pattern string
+	bytes   []byte
+}
+
+var routes = []route{
+	{
+		pattern: "/data/2.5/weather",
+		bytes:   current,
+	},
+	{
+		pattern: "/data/2.5/forecast",
+		bytes:   forecast,
+	},
+}
+
 func main() {
 	go func() {
 		for {
@@ -30,8 +46,11 @@ func main() {
 		}
 	}()
 
-	http.HandleFunc("/current", bytesHandler(current))
-	http.HandleFunc("/forecast", bytesHandler(forecast))
+	for _, route := range routes {
+		log.Printf("Registering route: %s", route.pattern)
+		http.HandleFunc(route.pattern, bytesHandler(route.bytes))
+	}
+
 	log.Fatal(http.ListenAndServe(":8090", nil))
 }
 
